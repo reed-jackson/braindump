@@ -9,8 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/themes": "^3.0.5",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.43.4",
+    "@tabler/icons-react": "^3.5.0",
+    "next": "14.2.3",
+    "openai": "^4.47.1",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.3"
+    "stripe": "^15.8.0"
   }
 }
