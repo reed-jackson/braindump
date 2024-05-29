@@ -40,3 +40,11 @@
 	padding-right: var(--space-3);
 	margin-right: "auto";
 }
+
+.floating-button {
+	background-color: var(--gray-5) !important;
+	border-radius: var(--radius-5) !important;
+	padding: var(--space-3) !important;
+	outline: 1px solid var(--gray-6) !important;
+	box-shadow: 0 0 1px 2px var(--gray-10) !important;
+}

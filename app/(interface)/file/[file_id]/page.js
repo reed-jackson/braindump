@@ -25,10 +25,14 @@ import {
 	IconClockPause,
 	IconCopy,
 	IconEye,
+	IconKey,
+	IconListCheck,
+	IconMoodPuzzled,
 	IconNote,
 	IconSend,
 	IconSortDescending,
 	IconSparkles,
+	IconTextCaption,
 	IconTransform,
 	IconWaveSine,
 } from "@tabler/icons-react";
@@ -36,6 +40,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import ReactMarkdown from "react-markdown";
 import { useChat } from "ai/react";
 import Markdown from "react-markdown";
+//import balanceServiceClient from "services/BalanceService";
 
 export default function FilePage({ params }) {
 	const [user, setUser] = useState(null);
@@ -109,9 +114,37 @@ export default function FilePage({ params }) {
 		getFile();
 	}, [file_id]);
 
+	// Check Functions
+	const checkForPositiveBalance = async (userId) => {
+		const { data: profile, error: profile_error } = await supabase
+			.from("profiles")
+			.select("balance")
+			.eq("user_id", userId)
+			.select()
+			.maybeSingle();
+
+		console.log(profile);
+		console.log(profile_error);
+
+		if (profile.balance > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
 	// Generation Functions
 
 	const transcribeAudio = async () => {
+		// Check Balance
+		const balanceOk = await checkForPositiveBalance(user.id);
+		console.log(balanceOk);
+		if (!balanceOk) {
+			console.log("not balance");
+			// throw an error and end
+			return;
+		}
+
 		setStatus({ ...status, transcribed: "in_progress" });
 
 		let fileLengthInSeconds = 0;
@@ -141,10 +174,13 @@ export default function FilePage({ params }) {
 		}
 	};
 
-	const summarizeTranscript = async () => {
-		setStatus({ ...status, summarized: "in_progress" });
+	const summarizeTranscript = async (type) => {
+		if (type === "basic") {
+			setStatus({ ...status, summarized: "in_progress" });
+		}
+
 		try {
-			const response = await fetch("/api/summarize", {
+			const response = await fetch(`/api/summarize/${type}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -153,30 +189,37 @@ export default function FilePage({ params }) {
 			});
 
 			const result = await response.json();
-			setSummary(result.body.summary);
-			setStatus({ ...status, summarized: "complete", chat_ready: "complete" });
+			let newSummary = { ...summary };
+			newSummary[type] = result.body.summary;
 
-			await setMessages([
-				{
-					role: "system",
-					content:
-						"You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the following text and summarize it into a concise abstract paragraph. Then, we can discuss your sumamry together Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Always format your summary in Markdown.",
-				},
-				{
+			setSummary(newSummary);
+			setSummaryInstructions("");
+
+			if (type === "basic") {
+				setStatus({ ...status, summarized: "complete", chat_ready: "complete" });
+				// Queue up the chat if this is the first summary
+				await setMessages([
+					{
+						role: "system",
+						content:
+							"You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the following text and summarize it into a concise abstract paragraph. Then, we can discuss your sumamry together Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Always format your summary in Markdown.",
+					},
+					{
+						role: "user",
+						content: "Here is the transcript: " + transcript,
+					},
+					{
+						role: "assistant",
+						content: result.body.summary,
+					},
+				]);
+
+				append({
 					role: "user",
-					content: "Here is the transcript: " + transcript,
-				},
-				{
-					role: "assistant",
-					content: result.body.summary,
-				},
-			]);
-
-			append({
-				role: "user",
-				content:
-					"Thank you. Now, I'm going to hand you off to my client who requested this chat session. Please say hello and let them know you're ready to discuss the transcript with them.",
-			});
+					content:
+						"Thank you. Now, I'm going to hand you off to my client who requested this chat session. Please say hello and let them know you're ready to discuss the transcript with them.",
+				});
+			}
 		} catch (error) {
 		} finally {
 		}
@@ -241,7 +284,7 @@ export default function FilePage({ params }) {
 
 			<Flex width={"100%"} gap={"3"} overflow={"scroll"}>
 				<ScrollArea style={{ width: "100%" }}>
-					<Flex direction={"column"} gap={"3"} pr={"3"} pb={"9"} width={"100%"}>
+					<Flex direction={"column"} gap={"3"} pr={"3"} pb={"9"} width={"100%"} style={{ paddingBottom: "80VH" }}>
 						<Card variant={"classic"}>{params.file_id}</Card>
 
 						<Card variant="classic" style={{ position: "relative" }}>
@@ -302,7 +345,7 @@ export default function FilePage({ params }) {
 
 										<Box pt="3">
 											<Tabs.Content value="raw">
-												<Flex direction={"column"} gap={"2"} position={"relative"}>
+												<Flex direction={"column"} gap={"2"} position={"relative"} pb={"9"}>
 													<Flex gap={"2"}>
 														<Button variant="soft" onClick={() => copyToClipboard(transcript)}>
 															<IconCopy size={"1rem"} />
@@ -316,7 +359,11 @@ export default function FilePage({ params }) {
 													)}
 
 													<Flex position={"absolute"} bottom={"2"} left={"0"} right={"0"} align={"center"} direction={"column"}>
-														<Button onClick={() => setTranscriptRolledUp(!transcriptRolledUp)} variant="solid">
+														<Button
+															onClick={() => setTranscriptRolledUp(!transcriptRolledUp)}
+															variant="solid"
+															className="floating-button"
+														>
 															{transcriptRolledUp ? <IconArrowDown size={"1rem"} /> : <IconArrowUp size={"1rem"} />}
 															{transcriptRolledUp ? "Show Full Transcript" : "Hide Transcript"}
 														</Button>
@@ -384,7 +431,7 @@ export default function FilePage({ params }) {
 										/>
 
 										<Tooltip content={transcript ? "Summarize Transcript" : "Create a Transcipt first"}>
-											<Button onClick={summarizeTranscript} disabled={!transcript}>
+											<Button onClick={() => summarizeTranscript("basic")} disabled={!transcript}>
 												<IconSparkles size={"1rem"} />
 												Summarize
 											</Button>
@@ -408,15 +455,97 @@ export default function FilePage({ params }) {
 								)}
 
 								{status.summarized === "complete" && (
-									<Text size={"4"}>
-										<ReactMarkdown>{summary}</ReactMarkdown>
-									</Text>
+									<Tabs.Root defaultValue="basic">
+										<Tabs.List>
+											<Tabs.Trigger value="basic">
+												<Flex gap={"1"} align={"center"}>
+													<IconTextCaption size={"1rem"} />
+													Basic
+												</Flex>
+											</Tabs.Trigger>
+
+											<Tabs.Trigger value="action_items">
+												<Flex gap={"1"} align={"center"}>
+													<IconListCheck size={"1rem"} />
+													Action Items
+												</Flex>
+											</Tabs.Trigger>
+
+											<Tabs.Trigger value="key_points">
+												<Flex gap={"1"} align={"center"}>
+													<IconKey size={"1rem"} />
+													Key Points
+												</Flex>
+											</Tabs.Trigger>
+
+											<Tabs.Trigger value="sentiment">
+												<Flex gap={"1"} align={"center"}>
+													<IconMoodPuzzled size={"1rem"} />
+													Sentiment
+												</Flex>
+											</Tabs.Trigger>
+										</Tabs.List>
+
+										<Box pt={"3"}>
+											<Tabs.Content value="basic">
+												<Flex direction={"column"} gap={"2"}>
+													<Flex gap={"2"}>
+														<Button variant="soft" onClick={() => copyToClipboard(summary.basic)}>
+															<IconCopy size={"1rem"} />
+															Copy to Clipboard
+														</Button>
+													</Flex>
+
+													<Text size={"4"}>
+														<ReactMarkdown>{summary.basic}</ReactMarkdown>
+													</Text>
+												</Flex>
+											</Tabs.Content>
+
+											<Tabs.Content value="action_items">
+												{summary.action_items ? (
+													<Flex direction={"column"} gap={"2"}>
+														<Flex gap={"2"}>
+															<Button variant="soft" onClick={() => copyToClipboard(summary.action_items)}>
+																<IconCopy size={"1rem"} />
+																Copy to Clipboard
+															</Button>
+														</Flex>
+
+														<Text size={"4"}>
+															<ReactMarkdown>{summary.action_items}</ReactMarkdown>
+														</Text>
+													</Flex>
+												) : (
+													<Flex className="update-card" direction={"column"} align={"center"} gap={"2"} p={"4"}>
+														<Text weight={"medium"}>Create Action Items</Text>
+														<Text weight={"medium"} align={"center"} size={"2"}>
+															Extract key action items from the recording
+														</Text>
+
+														<TextArea
+															style={{ width: "100%", height: "100px" }}
+															placeholder="Enter any specific instructions for choosing action items (optional)..."
+															value={summaryInstructions}
+															onChange={(e) => setSummaryInstructions(e.target.value)}
+														/>
+
+														<Button onClick={() => summarizeTranscript("action-items")} disabled={!transcript}>
+															<IconListCheck size={"1rem"} />
+															Create Action Items
+														</Button>
+													</Flex>
+												)}
+											</Tabs.Content>
+										</Box>
+									</Tabs.Root>
 								)}
 							</Flex>
 						</Card>
 					</Flex>
 				</ScrollArea>
 
+				{/* Chat */}
 				<ScrollArea style={{ maxWidth: "440px", minWidth: "320px", width: "100%" }}>
 					<Flex direction={"column"} gap={"3"}>
 						{status.uploaded != "complete" ||
