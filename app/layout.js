@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
 			<body>
-				<Theme accentColor="orange" grayColor="sand" appearance="dark" panelBackground="transluscent">
+				<Theme accentColor="orange" grayColor="sand" appearance="dark" panelBackground="transluscent" radius="full">
 					{children}
 				</Theme>
 			</body>

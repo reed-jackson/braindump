@@ -1,0 +1,42 @@
+.upload-input {
+	width: 100%;
+	font-size: var(--font-size-4);
+	cursor: pointer;
+}
+.upload-dropper {
+	border: 2px dashed var(--gray-6);
+	border-radius: var(--radius-4);
+	width: "100%";
+}
+
+.upload-dropper.hovered {
+	border: 2px solid var(--accent-6);
+	background-color: var(--accent-3);
+}
+
+.home-main {
+	background-image: radial-gradient(var(--gray-1), var(--accent-8));
+}
+
+.update-card {
+	width: 100%;
+	border-radius: var(--radius-4);
+	background-color: var(--accent-2);
+	border: 2px solid var(--accent-6);
+}
+
+.user-message {
+	background-color: var(--accent-3);
+	border-radius: var(--radius-5);
+	padding: var(--space-3);
+	margin-left: "auto";
+	text-align: right;
+}
+
+.assistant-message {
+	background-color: var(--gray-2);
+	border-radius: var(--radius-5);
+	padding-left: var(--space-3);
+	padding-right: var(--space-3);
+	margin-right: "auto";
+}
