@@ -317,7 +317,7 @@ export default function AppNav() {
 										<Badge color="green">+50% Bonus ($2.50)</Badge>
 										<Button
 											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_5_CREDIT_PRICE, 500, false)}
-											disabled={!user || user.is_anonymous}
+											disabled={!user || (user && user.is_anonymous)}
 										>
 											Buy Credits
 										</Button>
@@ -332,7 +332,7 @@ export default function AppNav() {
 										<Badge color="green">+100% Bonus ($15)</Badge>
 										<Button
 											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_15_CREDIT_PRICE, 1500, false)}
-											disabled={!user || user.is_anonymous}
+											disabled={!user || (user && user.is_anonymous)}
 										>
 											Buy Credits
 										</Button>
@@ -347,7 +347,7 @@ export default function AppNav() {
 										<Badge color="green">+100% Bonus ($50)</Badge>
 										<Button
 											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_50_CREDIT_PRICE, 5000, false)}
-											disabled={!user || user.is_anonymous}
+											disabled={!user || (user && user.is_anonymous)}
 										>
 											Buy Credits
 										</Button>
@@ -376,7 +376,7 @@ export default function AppNav() {
 								<Button
 									onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_CUSTOM_CREDIT_PRICE, null, true)}
 									size={"2"}
-									disabled={!user || user.is_anonymous}
+									disabled={!user || (user && user.is_anonymous)}
 								>
 									Buy Credits
 								</Button>
