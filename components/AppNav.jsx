@@ -25,7 +25,9 @@ import {
 	IconBrain,
 	IconBubble,
 	IconBusinessplan,
+	IconCashBanknote,
 	IconCircleCheck,
+	IconCirclePlus,
 	IconCurrencyDollar,
 	IconDownload,
 	IconFile,
@@ -290,11 +292,21 @@ export default function AppNav() {
 						<Flex direction={"column"} gap={"2"}>
 							<Callout.Root color="green">
 								<Callout.Icon>
-									<IconPlus />
+									<IconCashBanknote />
 								</Callout.Icon>
 
 								<Callout.Text>For a limited time, get up to 100% bonus credits when you buy. </Callout.Text>
 							</Callout.Root>
+
+							{user.is_anonymous && (
+								<Callout.Root color="orange">
+									<Callout.Icon>
+										<IconCirclePlus />
+									</Callout.Icon>
+
+									<Callout.Text>Please create an account to purchase credits </Callout.Text>
+								</Callout.Root>
+							)}
 
 							<Grid columns={{ initial: "1", xs: "3" }} gap={"3"}>
 								<Card>
@@ -303,7 +315,10 @@ export default function AppNav() {
 											$5
 										</Text>
 										<Badge color="green">+50% Bonus ($2.50)</Badge>
-										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_5_CREDIT_PRICE, 500, false)}>
+										<Button
+											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_5_CREDIT_PRICE, 500, false)}
+											disabled={user.is_anonymous}
+										>
 											Buy Credits
 										</Button>
 									</Flex>
@@ -315,7 +330,10 @@ export default function AppNav() {
 											$15
 										</Text>
 										<Badge color="green">+100% Bonus ($15)</Badge>
-										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_15_CREDIT_PRICE, 1500, false)}>
+										<Button
+											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_15_CREDIT_PRICE, 1500, false)}
+											disabled={user.is_anonymous}
+										>
 											Buy Credits
 										</Button>
 									</Flex>
@@ -327,7 +345,10 @@ export default function AppNav() {
 											$50
 										</Text>
 										<Badge color="green">+100% Bonus ($50)</Badge>
-										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_50_CREDIT_PRICE, 5000, false)}>
+										<Button
+											onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_50_CREDIT_PRICE, 5000, false)}
+											disabled={user.is_anonymous}
+										>
 											Buy Credits
 										</Button>
 									</Flex>
@@ -355,6 +376,7 @@ export default function AppNav() {
 								<Button
 									onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_CUSTOM_CREDIT_PRICE, null, true)}
 									size={"2"}
+									disabled={user.is_anonymous}
 								>
 									Buy Credits
 								</Button>
