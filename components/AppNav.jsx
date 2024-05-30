@@ -26,6 +26,7 @@ import {
 	IconBubble,
 	IconBusinessplan,
 	IconCircleCheck,
+	IconCurrencyDollar,
 	IconDownload,
 	IconFile,
 	IconHandFinger,
@@ -36,7 +37,8 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import SignupDialog from "./SignupDialog";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { calculateBonus } from "@/utils/CreditBonusCalculator";
 
 export default function AppNav() {
 	const [user, setUser] = useState(null);
@@ -53,8 +55,12 @@ export default function AppNav() {
 	const [helpDialogOpen, setHelpDialogOpen] = useState(false);
 	const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
 
+	const [customCreditAmount, setCustomCreditAmount] = useState(null);
+	const [customCreditAmountBonus, setCustomCreditAmountBonus] = useState(false);
+
 	const supabase = createClientComponentClient();
 	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	useEffect(() => {
 		const signup = searchParams.get("signup");
@@ -119,6 +125,15 @@ export default function AppNav() {
 		fetchUser();
 	}, []);
 
+	useEffect(() => {
+		if (!customCreditAmount || customCreditAmount == 0) {
+			setCustomCreditAmountBonus(null);
+			return;
+		}
+
+		setCustomCreditAmountBonus(calculateBonus((customCreditAmount * 100).toFixed(0)));
+	}, [customCreditAmount]);
+
 	const refreshBalance = async () => {
 		const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
 		setUserProfile(data);
@@ -179,6 +194,38 @@ export default function AppNav() {
 			setFeedbackDialogOpen(false);
 		} catch (error) {
 			console.error("Error submitting help request:", error);
+		}
+	};
+
+	const createCheckout = async (price_id, credit_amount, is_custom) => {
+		try {
+			const currentUrl = window.location.href;
+
+			const payload = {
+				price_id: price_id,
+				quantity: Math.round(customCreditAmount),
+				is_custom: is_custom,
+				credit_amount: is_custom ? Math.round(customCreditAmount * 100) : credit_amount,
+				success_url: currentUrl + "?payment_success=true",
+				cancel_url: currentUrl,
+			};
+
+			const response = await fetch("/api/stripe/create-checkout", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			});
+
+			if (!response.ok) {
+				throw new Error("Network response was not ok");
+			}
+
+			const session = await response.json();
+			router.push(session.body.url);
+		} catch (error) {
+			console.error("Error creating checkout session:", error);
 		}
 	};
 
@@ -250,7 +297,7 @@ export default function AppNav() {
 											$5
 										</Text>
 										<Badge color="green">+50% Bonus ($2.50)</Badge>
-										<Button>Buy Credits</Button>
+										<Button onClick={() => createCheckout("price_1PLry0LGrbktpXqrJfYpCM11", 500, false)}>Buy Credits</Button>
 									</Flex>
 								</Card>
 
@@ -260,7 +307,7 @@ export default function AppNav() {
 											$15
 										</Text>
 										<Badge color="green">+100% Bonus ($15)</Badge>
-										<Button>Buy Credits</Button>
+										<Button onClick={() => createCheckout("price_1PLrydLGrbktpXqrjn0VkTmQ", 1500, false)}>Buy Credits</Button>
 									</Flex>
 								</Card>
 
@@ -270,7 +317,7 @@ export default function AppNav() {
 											$50
 										</Text>
 										<Badge color="green">+100% Bonus ($50)</Badge>
-										<Button>Buy Credits</Button>
+										<Button onClick={() => createCheckout("price_1PLrzGLGrbktpXqrSrX5D3U5", 5000, false)}>Buy Credits</Button>
 									</Flex>
 								</Card>
 							</Grid>
@@ -278,6 +325,29 @@ export default function AppNav() {
 							<Button variant="outline" color="gray">
 								Buy a Custom Amount
 							</Button>
+
+							<Flex gap={"2"} width={"300px"} mx={"auto"}>
+								<TextField.Root
+									size={"2"}
+									placeholder="Enter credit amount"
+									value={customCreditAmount}
+									onChange={(e) => setCustomCreditAmount(e.target.value)}
+									type="number"
+									max={999}
+									min={0}
+									style={{ flexGrow: 1 }}
+								>
+									<TextField.Slot>
+										<Text>$</Text>
+									</TextField.Slot>
+									<TextField.Slot side="right">
+										{customCreditAmountBonus && <Badge color="green">+${(customCreditAmountBonus / 100).toFixed(2)} Bonus</Badge>}
+									</TextField.Slot>
+								</TextField.Root>
+								<Button onClick={() => createCheckout("price_1PLs3XLGrbktpXqrvlgpmjvg", null, true)} size={"2"}>
+									Buy Credits
+								</Button>
+							</Flex>
 
 							<Text size={"1"} color="gray">
 								Credits never expire, are non-refundable, and non-transferrable
