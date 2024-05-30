@@ -298,7 +298,7 @@ export default function AppNav() {
 								<Callout.Text>For a limited time, get up to 100% bonus credits when you buy. </Callout.Text>
 							</Callout.Root>
 
-							{user.is_anonymous && (
+							{user && user.is_anonymous && (
 								<Callout.Root color="orange">
 									<Callout.Icon>
 										<IconCirclePlus />
