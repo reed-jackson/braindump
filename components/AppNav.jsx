@@ -83,7 +83,13 @@ export default function AppNav() {
 			if (data) {
 				const { data: profile, error: profile_error } = await supabase
 					.from("profiles")
-					.update({ is_anonymous: false })
+					.select("balance")
+					.eq("user_id", user.id)
+					.maybeSingle();
+
+				const { data: profile_update, error: profile_update_error } = await supabase
+					.from("profiles")
+					.update({ is_anonymous: false, balance: profile.balance + 500 })
 					.eq("user_id", user.id)
 					.maybeSingle();
 
