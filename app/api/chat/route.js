@@ -10,9 +10,6 @@ const openai = new OpenAI({
 	apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Set the runtime to edge for best performance
-export const runtime = "edge";
-
 export async function POST(req) {
 	const supabase = createRouteHandlerClient({ cookies });
 

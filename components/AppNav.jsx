@@ -297,7 +297,9 @@ export default function AppNav() {
 											$5
 										</Text>
 										<Badge color="green">+50% Bonus ($2.50)</Badge>
-										<Button onClick={() => createCheckout("price_1PLry0LGrbktpXqrJfYpCM11", 500, false)}>Buy Credits</Button>
+										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_5_CREDIT_PRICE, 500, false)}>
+											Buy Credits
+										</Button>
 									</Flex>
 								</Card>
 
@@ -307,7 +309,9 @@ export default function AppNav() {
 											$15
 										</Text>
 										<Badge color="green">+100% Bonus ($15)</Badge>
-										<Button onClick={() => createCheckout("price_1PLrydLGrbktpXqrjn0VkTmQ", 1500, false)}>Buy Credits</Button>
+										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_15_CREDIT_PRICE, 1500, false)}>
+											Buy Credits
+										</Button>
 									</Flex>
 								</Card>
 
@@ -317,19 +321,17 @@ export default function AppNav() {
 											$50
 										</Text>
 										<Badge color="green">+100% Bonus ($50)</Badge>
-										<Button onClick={() => createCheckout("price_1PLrzGLGrbktpXqrSrX5D3U5", 5000, false)}>Buy Credits</Button>
+										<Button onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_50_CREDIT_PRICE, 5000, false)}>
+											Buy Credits
+										</Button>
 									</Flex>
 								</Card>
 							</Grid>
 
-							<Button variant="outline" color="gray">
-								Buy a Custom Amount
-							</Button>
-
 							<Flex gap={"2"} width={"300px"} mx={"auto"}>
 								<TextField.Root
 									size={"2"}
-									placeholder="Enter credit amount"
+									placeholder="Enter a custom amount"
 									value={customCreditAmount}
 									onChange={(e) => setCustomCreditAmount(e.target.value)}
 									type="number"
@@ -344,7 +346,10 @@ export default function AppNav() {
 										{customCreditAmountBonus && <Badge color="green">+${(customCreditAmountBonus / 100).toFixed(2)} Bonus</Badge>}
 									</TextField.Slot>
 								</TextField.Root>
-								<Button onClick={() => createCheckout("price_1PLs3XLGrbktpXqrvlgpmjvg", null, true)} size={"2"}>
+								<Button
+									onClick={() => createCheckout(process.env.NEXT_PUBLIC_STRIPE_CUSTOM_CREDIT_PRICE, null, true)}
+									size={"2"}
+								>
 									Buy Credits
 								</Button>
 							</Flex>
