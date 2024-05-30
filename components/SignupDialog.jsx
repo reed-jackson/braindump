@@ -19,7 +19,7 @@ export default function SignupDialog({ trigger }) {
 	const [email, setEmail] = useState("");
 	const [isValidEmail, setIsValidEmail] = useState(true);
 
-	const [emailSuccess, setEmailSuccess] = useState(true);
+	const [emailSuccess, setEmailSuccess] = useState(false);
 
 	const supabase = createClientComponentClient();
 
