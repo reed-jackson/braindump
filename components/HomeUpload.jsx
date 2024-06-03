@@ -102,6 +102,7 @@ export default function HomeUpload() {
 				let user_id;
 
 				if (!user) {
+					console.log("no user, creating one");
 					const { data: anon_user, error: anon_user_error } = await supabase.auth.signInAnonymously();
 
 					const { data: profile, error: profile_error } = await supabase
@@ -118,6 +119,8 @@ export default function HomeUpload() {
 
 					setUser(anon_user.user);
 					user_id = anon_user.user.id;
+
+					console.log("user created:", user_id);
 				} else {
 					user_id = user.id;
 				}
@@ -129,11 +132,16 @@ export default function HomeUpload() {
 					is_public: true,
 				};
 
+				console.log("uploading file");
+
 				const { data: file_record, error: file_record_error } = await supabase
 					.from("files")
 					.insert([file_payload])
 					.select()
 					.maybeSingle();
+
+				console.log(file_record);
+				console.log(file_record_error);
 
 				router.push(`/file/${file_record.id}`);
 			} catch (error) {

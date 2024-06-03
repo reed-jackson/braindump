@@ -51,6 +51,7 @@ export async function POST(request) {
 				receipt_link: charge.receipt_url,
 			};
          */
+
 			//Update the account balance
 			const { data: update_profile, error: update_profile_error } = await supabase
 				.from("profiles")
